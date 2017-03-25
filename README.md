@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://travis-ci.org/ccckmit/chinese_convert"><img src="https://img.shields.io/travis/ccckmit/chinese_convert.svg" alt="Travis"></a>
+  <a href="https://travis-ci.org/ccckmit/aslt"><img src="https://img.shields.io/travis/ccckmit/aslt.svg" alt="Travis"></a>
   <a href="http://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="Standard - JavaScript Style Guide"></a>
-  <a href="https://www.npmjs.com/package/chinese_convert"><img src="https://img.shields.io/npm/dm/chinese_convert.svg" alt="npm downloads"></a>
-  <a href="https://www.npmjs.com/package/chinese_convert"><img src="https://img.shields.io/npm/v/chinese_convert.svg" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/aslt"><img src="https://img.shields.io/npm/dm/aslt.svg" alt="npm downloads"></a>
+  <a href="https://www.npmjs.com/package/aslt"><img src="https://img.shields.io/npm/v/aslt.svg" alt="npm version"></a>
 </p>
 
 # ASLT : Artifical Spoken Language Toolket
