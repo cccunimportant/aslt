@@ -1,49 +1,3 @@
-<p align="center">
-  <a href="https://travis-ci.org/ccckmit/chinese_convert"><img src="https://img.shields.io/travis/ccckmit/chinese_convert.svg" alt="Travis"></a>
-  <a href="http://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="Standard - JavaScript Style Guide"></a>
-  <a href="https://www.npmjs.com/package/chinese_convert"><img src="https://img.shields.io/npm/dm/chinese_convert.svg" alt="npm downloads"></a>
-  <a href="https://www.npmjs.com/package/chinese_convert"><img src="https://img.shields.io/npm/v/chinese_convert.svg" alt="npm version"></a>
-</p>
-
-# ASLT : Artifical Spoken Language Toolket
-
-中文：人造交談語言工具 - 翻譯與剖析
-
-## Install
-
-```
-$ npm install aslt
-```
-
-## BNF
-
-We design 2 rules for any language. It's easy !
-
-```
-S = P* .+
-P = a* (N+|V+)?
-```
-
-## Example
-
-File: mtTest.js
-
-```
-var MT = require('aslt')
-
-MT.analysis('小明 和 小英:N 一起吃蘋果。\n')
-MT.analysis('小明有5個蘋果，給了小華3個蘋果，請問他還剩幾個蘋果？\n')
-MT.analysis('黑黑的天，大大的風，爸爸去捕魚，為甚麼 還 不 回 家？\n')
-MT.analysis('John:N 與 瑪莉:N 是 一 對 戀人。\n')
-MT.analysis('風與日。風日爭，旅人至，脫者勝，風狂吹，人緊衣，風敗，日暖照，人脫衣，日勝。\n')
-MT.analysis('蘋果和牛奶很好吃。蘋果牛奶很好喝。很好喝的蘋果牛奶。')
-MT.analysis('好大的蘋果。')
-```
-
-## Run 
-
-```
-$ node mtTest.js
 ["小明","和","小英:N","一起","吃","蘋果","。","↓"]
  小明:N/ 和:V/ 小英:N:N/ 一起:a 吃:V/ 蘋果:N/ 。:. ↓:.
 ["_xiǎo_míng","and","_xiǎo_yīng","together","eat","apple","。","↓"]
@@ -88,10 +42,3 @@ $ node mtTest.js
  好:a 大:a 的:a 蘋果:N/ 。:.
 ["good","big","_de","apple","。"]
 =========================
-```
-
-## comment
-
-我們用《結巴》字典做基礎，用程式將《結巴的詞性》對應到《a,N,V》等人造語的詞性上。
-
-這些詞性標註還沒辦法完全正確，因此人造語的字典還改進的空間！

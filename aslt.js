@@ -1,25 +1,13 @@
-// 修改：修飾語不分名詞或動詞，統一叫做 a
-// 規則改為《小修飾大、前修飾後》。
-
-// 問題是：蘋果牛奶 到底是 加了蘋果的牛奶，還是蘋果和牛奶呢？ 這得看中間有沒有和字。
-
-// S = P* .+
-// P = a* (N+|V+)?
-
-/* 無法正確解析的語句
-
-好a 喝V 的a 蘋果N 牛奶N
+/* ASLT : Artifical Spoken Language Toolket (人造交談語言工具 - 翻譯與剖析)
+S = P* .+                // 句子 = 短語* 符號+
+P = a* (N+|V+)?          // 短語 = 修飾* (名詞+|動詞+)
 */
-
-// 小明 有 5 個 蘋果 ， 給 了 小華 3 個 蘋果 ， 請問 他 還 剩 幾 個 蘋果 ？
-// NP   V  n    NP      V  v  NP   n    NP      Q    NP v  V  n     NP
-//      VP              VP                              VP
 var pinyinJs = require('pinyin.js')
 var cc = require('chinese_convert')
 var kb = require('./kb')
 
 // KoaApp 的錯誤和下列中文全域變數有關。
-var wi, words, errors, tags
+var wi, words, errors, tags, cuts
 
 function isTag (tag) {
   var word = words[wi]
@@ -27,29 +15,22 @@ function isTag (tag) {
   return (tag === word.tag)
 }
 
-// var print = function (s) { process.stderr.write(s) }
-// var print = function (s) { process.stdout.write(s) }
-var print = function (s) { console.log(s) }
-
 function next (tag) {
   var w = words[wi]
+  tags.push(w.tag)
+  cuts[wi] = ''
   if (isTag(tag)) {
-//    print(w.cn + ':' + tag + ' ')
     errors[wi] = ''
-    tags.push(w.cn + ':' + tag)
     wi++
     return w
   } else {
-//    print(w.cn + ':' + w.tag + '≠' + tag + ' ')
     errors[wi] = w.tag + '≠' + tag
-    tags.push(w.cn + ':' + errors[wi])
     throw Error(errors[wi])
   }
 }
 
 // S = P* .+
 function S () {
-  tags.push('<S>')
   try {
     while (!isTag('.')) P()
     do { next('.') } while (isTag('.'))
@@ -57,20 +38,18 @@ function S () {
     for (; wi < words.length && words[wi].tag !== '.'; wi++) {}
     for (; wi < words.length && words[wi].tag === '.'; wi++) {}
   }
-  tags.push('</S>')
-//  console.error('')
+  cuts[wi - 1] = '\n'
 }
 
 // P = a* (N+|V+)?
 function P () {
-  tags.push('<P>')
   while (isTag('a')) next('a')
 
   if (!isTag('.')) {
     var t = words[wi].tag
     while (isTag(t)) next(t)
   }
-  tags.push('</P>')
+  cuts[wi-1] = '/'
 }
 
 var exps = [
@@ -115,14 +94,15 @@ function clex (text) {
   return {tokens: tokens, words: lwords}
 }
 
-function parse (pWords) {
-  words = pWords
+function parse (lex) {
+  words = lex.words
   errors = []
   tags = []
+  cuts = []
   for (wi = 0; wi < words.length;) {
     S()
   }
-  return {errors: errors, tags: tags}
+  return {tokens: lex.tokens, words: words, errors: errors, tags: tags, cuts: cuts}
 }
 
 function english (word) {
@@ -143,15 +123,24 @@ function mt (words) {
 
 function analysis (text) {
   var lex = clex(' ' + text)
-  console.log('中文：%j', lex.tokens)
-  console.log('詞彙：%j', lex.words)
-  var p = parse(lex.words)
-  console.log('剖析：%j', p.tags)
-  console.log('錯誤：%j', p.errors)
+  console.log('%j', lex.tokens)
+//  console.log('詞彙：%j', lex.words)
+  var p = parse(lex)
+//  console.log('詞性：%j', p.tags)
+  console.log(' %s', formatParse(p).join(' ').trim())
+//  console.log('錯誤：%j', p.errors)
   var eWords = mt(lex.words)
-  console.log('英文：%j', eWords)
+  console.log('%j', eWords)
   console.log('=========================')
   return {cn: words, en: eWords}
+}
+
+function formatParse (p) {
+  var outs = []
+  for (var i = 0; i < p.words.length; i++) {
+    outs.push(p.tokens[i] + ':' + p.tags[i] + p.cuts[i])
+  }
+  return outs
 }
 
 module.exports = { kb: kb, parse: parse, clex: clex, mt: mt, analysis: analysis }
