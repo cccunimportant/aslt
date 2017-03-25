@@ -143,4 +143,12 @@ function formatParse (p) {
   return outs
 }
 
-module.exports = { kb: kb, parse: parse, clex: clex, mt: mt, analysis: analysis }
+module.exports = {
+  kb: kb,
+  parse: parse,
+  clex: clex,
+  mt: mt,
+  english: english,
+  formatParse: formatParse,
+  analysis: analysis
+}

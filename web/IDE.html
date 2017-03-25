@@ -1,0 +1,153 @@
+<html>
+<style>
+html, body, div {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  vertical-align: baseline;
+//  line-height:160%;
+  font-family : 'Tahoma', 'Pmingliu';
+}
+div, textarea { float: left; }
+#watch  { overflow:auto; margin:10px; padding:10px; width:95%; height:20vh; display:"inline"; border:dotted #336699 1px; line-height:180%;  }
+#source { margin:10px; padding:10px; padding:10px; width:100%; height:57vh; display:"inline"; line-height:180%; }
+#target { overflow:auto; margin:10px; padding:10px; width:95%; height:80vh; display:"inline"; border:dotted #336699 1px; line-height:180%;  }
+button, input { margin:10px; padding:10px; }
+ruby { color:black;  }
+rt { font-size:1em; color:#336699; padding:10px 0 10px 0; letter-spacing: 0px; };
+rp { }
+em { color:red }
+.header { background-color:black; width:100%; height:2em; color:white; font-family:標楷體; font-size:1.5em; padding:10px 10px 0px 10px }
+</style>
+<body>
+
+<div class="header">人造交談語言 (翻譯撰寫環境)
+<input id="c2eRadio" name="mtType" type="radio" checked>中翻英 <input id="e2cRadio" name="mtType" type="radio">英翻中
+</div>
+
+<table width="98%">
+<tr>
+  <td width="50%">
+    <div id="watch"></div>
+<textarea id="source">
+小明 和 小英:N 一起吃蘋果。
+小明有5個蘋果，給了小華3個蘋果，請問他還剩幾個蘋果？
+黑黑的天，大大的風，爸爸去捕魚，為甚麼 還 不 回 家？
+John:N 與 瑪莉:N 是 一 對 戀人。
+風與日。風日爭，旅人至，脫者勝，風狂吹，人緊衣，風敗，日暖照，人脫衣，日勝。
+蘋果 了 了 香蕉 吃 。
+蘋果 和 香蕉 吃 。
+無色的綠觀念熱烈興奮地睡着。
+</textarea>
+  </td>
+  <td width="50%"><div id="target"></div></td>
+</tr>
+</table>
+<!-- <script src="mt.js"></script> -->
+<script>
+var sourceBox = document.getElementById("source");
+var targetBox = document.getElementById("target");
+var watchBox  = document.getElementById("watch");
+/*
+function ajaxPost (path, obj, callback) {
+  var r = new window.XMLHttpRequest()
+  r.open('POST', path, true)
+  r.onreadystatechange = function () {
+    if (r.readyState !== 4) return
+//    window.alert(r.responseText)
+    if (typeof callback !== 'undefined') callback(r)
+  }
+//  r.send(JSON.stringify(obj))
+}
+*/
+function ajaxPost (path, msg, callback) {
+  var r = new window.XMLHttpRequest()
+  r.open('POST', path, true)
+  r.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+  r.onreadystatechange = function () {
+    if (r.readyState !== 4) return
+//  window.alert(r.responseText)
+    if (typeof callback !== 'undefined') callback(r)
+  }
+  r.send(msg)
+}
+
+function mt(source, callback) {
+  ajaxPost ('/mt', 'source='+source /*.replace(/\n/g, ' ')*/, function(r) {
+    var mtObj = JSON.parse(r.responseText)
+    var toTags = [ '<ruby>' ];
+    for (var i=0; i<mtObj.cn.length; i++) {
+      if (mtObj.cn[i] === '↓')
+        toTags.push('</ruby><br/><br/><ruby>')
+      else {
+        var err = (mtObj.errors[i]==null)?'':'<em>'+mtObj.errors[i]+'</em>'
+        toTags.push('&nbsp;'+mtObj.cn[i]+ err + '<rp>(</rp><rt>&nbsp;'+mtObj.en[i] + '</rt> <rp>)</rp>');
+      }
+    }
+    toTags.push('</ruby>');
+    callback(toTags.join(' '))
+  })
+}
+
+function parse(source, callback) {
+  ajaxPost ('/parse', 'source='+source /*.replace(/\n/g, ' ')*/, function(r) {
+    var tree = JSON.parse(r.responseText)
+    callback(tree)
+  })
+}
+
+
+function doMt() {
+  mt(sourceBox.value, function(mtHtml) {
+    targetBox.innerHTML = mtHtml
+  })
+}
+
+window.onload = function() {
+  doMt();
+	sourceBox.addEventListener("keyup", function(event) {
+		event.preventDefault();
+    if (event.keyCode === 13)
+      doMt();
+	});
+}
+
+function cursorMove(box) {
+  var pos = box.selectionStart;
+  var text = " "+box.value;
+  for (var i=pos+1; i>0; i--) {
+    if (/[，。？\n]/.test(text[i])) {
+      break;
+    }
+  }
+  i = Math.max(i,0);
+  var m = text.substring(i+1).match(/^.*?[，。？\n]/);
+  if (m !== null) {
+    var sentence = m[0]
+    var ptree = parse(sentence, function(ptree) {
+      watchBox.innerHTML = ptree.join(' ')
+    });
+/*    
+    var mtSentence = mt(sentence, function(mtSentence) {
+      watchBox.innerHTML = mtSentence
+    });
+*/
+  }
+  return pos;
+}
+
+function sourceCursor() {
+   cursorMove(sourceBox);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  sourceBox.addEventListener('click', sourceCursor, false)
+  sourceBox.addEventListener('keyup', sourceCursor, false)
+  sourceBox.addEventListener('focus', sourceCursor, false)
+})
+
+</script>
+</body>
+</html>
+

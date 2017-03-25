@@ -1,0 +1,268 @@
+<!-- firefox 似乎不支援 ruby tag : http://www.w3schools.com/tags/tag_ruby.asp -->
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="favicon.ico">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+  <link href="main.css" rel="stylesheet">
+  <title>Lowan</title>
+</head>
+<body onload="load()">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#" style="color:#cccc33">Lowan (Lojban IDE)</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">        
+              <a id="dictname" class="dropdown-toggle" data-toggle="dropdown">Panel<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a onclick="switchPanel('Help')">About</a></li>
+                <li><a onclick="switchPanel('MT')">MT</a></li>
+              </ul>
+            </li>
+          </ul>
+<!--          
+          <ul class="nav navbar-nav navbar-right">
+            <li id="tabHelp" class="tab"><a href="#Help" onclick="switchPanel('Help')">About</a></li>
+          </ul>
+-->          
+        </div>
+      </div>
+    </nav>
+    <div id="panelMT" class="container panel" style="display:none;">
+        <form name="formMT" class="lead">
+          <div class="row" style="height:300px">
+            <div class="col-md-6">
+              <div class="page-header">
+                <div class="dropdown">
+                  <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    <span id="language1">English</span>
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                    <li><a href="JavaScript:switchDict('e2l')">English</a></li>
+                    <li><a href="JavaScript:switchDict('c2l')">中文</a></li>
+                  </ul>
+                </div>
+              </div>
+              <textarea id="xbox" class="form-control" style="height:100%">mi =come la =Beijing la =Taipei zo'e le =airplane</textarea>
+            </div>
+            <div class="col-md-6">
+              <div class="page-header">
+                <div class="dropdown">
+                  <button class="btn btn-default dropdown-toggle" type="button" id="language2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    Lojban
+                    <span class="caret"></span>
+                  </button>
+                </div>
+              </div>
+              <div id="ybox" style="width:100%; height:100%; border:1px dotted #888; overflow:auto;" class="form-control" contenteditable></div>
+            </div>
+            <div></div>
+          </div> <!-- row -->
+        </form>
+    </div>
+    <div id="panelHelp" class="container panel" style="display:none;">
+      <center>
+        <div class="page-header"><h1>About</h1></div>
+        <br/><img id="waitIcon" src="wait.gif"/><br/>
+        <p class="lead">
+        Lowan is a IDE like writing system for Lojban<br/><br/>
+        Source at github -- <a href="https://github.com/ccckmit/lowan">https://github.com/ccckmit/lowan</a><br/>
+        </p>
+      </center>
+    </div>
+    <div id="candidates" class="well well-sm" style="overflow:auto"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="bootstrap-filestyle.min.js"></script>
+    <script src="spa.js"></script>
+    <script src="l2e.hit.js"></script>
+    <script src="l2e.obj.js"></script>    
+    <script src="l2c.hit.js"></script>
+    <script src="l2c.obj.js"></script>    
+<script>
+var xbox, ybox, dictHit, dictKnown, dictObj, lDictHit=l2eHit, lDictObj=l2eObj;
+var dictHitMap  = { e2l:{}, c2l:{}, l2e:l2eHit, l2c:l2cHit };
+var dictKnownMap= { e2l:{}, c2l:{}, l2e:{},     l2c:{} };
+var dictObjMap  = { e2l:{}, c2l:{}, l2e:l2eObj, l2c:l2cObj };
+
+switchPanel("Help");
+
+function load() {
+  dictHitMap.e2l = hitReverse(dictHitMap.l2e);
+  dictObjMap.e2l = hitJoin(dictHitMap.l2e, dictObjMap.l2e);
+  dictHitMap.c2l = hitReverse(dictHitMap.l2c);
+  dictObjMap.c2l = hitJoin(dictHitMap.l2c, dictObjMap.l2c);
+  xbox   = document.getElementById("xbox");
+  ybox   = document.getElementById("ybox");
+  switchDict('e2l');
+  $('#waitIcon').hide();
+  switchPanel("MT");
+  var dbDictKnown = DB.load('dictKnown');
+  if (dbDictKnown !== undefined)
+    dictKnown = dbDictKnown;
+  $("#xbox").bind("keyup click focus", function() {
+    cursorMove(this);
+  });
+//  console.log("doMT()");
+  doMT();
+}
+
+function forget() {
+  DB.forget('dictKnown');
+  dictKnown = {};
+}
+
+function hitJoin(dictHit, dictObj) {
+  var dictJoin = {};
+  for (var x in dictHit) {
+    var list = dictHit[x];
+    for (var i in list) {
+      var y = list[i];
+      if (typeof dictJoin[y] === "undefined") {
+        dictJoin[y] = [];
+      }
+      dictJoin[y].push(dictObj[x]);
+    }
+  }
+  return dictJoin;
+}
+
+function hitReverse(dictHit) {
+  var dictRev = {};
+  for (var x in dictHit) {
+    var list = dictHit[x];
+    for (var i in list) {
+      var y = list[i];
+      if (typeof dictRev[y] === "undefined") {
+        dictRev[y] = [];
+      }
+      dictRev[y].push(x);
+    }
+  }
+  return dictRev;
+}
+
+function switchDict(name) {
+  dictHit   = dictHitMap[name];
+  dictKnown = dictKnownMap[name];
+  dictObj   = dictObjMap[name];
+  if (name.indexOf("e")>=0) 
+    $('#language1').html("English");
+  if (name.indexOf("c")>=0)
+    $('#language1').html("中文");
+}
+
+function switchPanel(name) {
+  $(".panel" ).css( "display", "none" );
+  $("#panel"+name).css("display", "block");
+  $(".tab" ).removeClass("active");
+  $("#tab"+name).addClass("active");
+}
+
+function normalize(e) {
+  return e.replace("'", '_').toLowerCase();
+}
+
+function mt(text) {
+  var toText = "";
+  var lines = text.split("\n");
+  for (var i in lines) {
+    if (lines[i].startsWith("//")) {
+      toText += lines[i]+ "\n";
+    } else {
+      toText += line_mt(lines[i])+"\n";
+    }
+  }
+  return toText;
+}
+
+function markup(y, yi) {
+  var i=0;
+  if (yi.length > 0) {
+    i = Math.max(parseInt(yi)-1, 0);
+  }
+  if (typeof y !== 'undefined')
+    return "("+y[i]+")";
+  else
+    return "()";
+}
+
+function line_mt(str) { // x2y : translate from x language into y language
+  str = " "+str;
+  var re = /\s(=([^\d\s]+)(\d*))/gi, m;  
+  var toStr = "";
+  var si = 0;
+  while (m = re.exec(str)) {
+    var ex=m[1], x = m[2], yi=m[3];
+    var lx=x.toLowerCase();
+    var y = dictHit[x];
+    toStr += str.substring(si, re.lastIndex-ex.length);
+    toStr += '<ruby class="'+normalize(ex)+'"><rb>'+ex+'</rb><rt>'+markup(y, yi)+'</rt></ruby>';
+    si = re.lastIndex;
+  }
+  return toStr;
+}
+
+function array2html(array) {
+  var str="<ol>";
+  for (var i in array) {
+    str += "<li>"+JSON.stringify(array[i])+"</li>";
+  }
+  return str+"</ol>";
+}
+
+function doMT() {
+  var cstr = mt(xbox.value);
+  ybox.innerHTML = cstr.replace(/\n/g, "<BR/>");
+}
+
+function cursorMove(element) {
+  var el = $(element).get(0);
+  var pos = el.selectionStart;
+  var text = " "+xbox.value;
+  for (var i=pos+1; i>0; i--) {
+    if (/[\s]/.test(text[i])) {
+      i--;
+      break;
+    }
+  }
+  i = Math.max(i,0);
+  var m = text.substring(i).match(/(([=\s])([^=\d\s]+)(\d*))/);
+  if (m !== null) {
+    var op=m[2], x = m[3], lx=x.toLowerCase();
+    var candidates = null;
+    if (op === '=') {
+      candidates = dictObj[lx];
+    } else {
+      candidates = lDictObj[lx];
+    }
+    if (!(candidates instanceof Array)) {
+      if (typeof candidates !== "undefined")
+        candidates = [ candidates ];
+    }
+    var candidatesHtml = array2html(candidates);
+    $('#candidates').html(candidatesHtml);
+  }
+  return pos;
+}
+
+$('#xbox').keyup(doMT);
+
+window.onbeforeunload = function(){
+  DB.save('dictKnown', dictKnown);
+};
+</script>
+</body>
+</html>
