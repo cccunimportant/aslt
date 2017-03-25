@@ -1,0 +1,41 @@
+{
+  "name": "aslt",
+  "version": "2.0.0",
+  "description": "Artifical Spoken Language Toolket (人造交談語言工具 - 翻譯與剖析)",
+  "main": "aslt.js",
+  "dependencies": {
+    "mdo": "^1.0.4",
+    "pinyin.js": "^2.0.0"
+  },
+  "devDependencies": {
+    "koa": "^2.2.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-router": "^7.0.1",
+    "koa-send": "^3.3.0",
+    "koa-static": "^3.0.0",
+    "chinese-conv": "^1.0.1",
+    "mocha": "^3.1.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "bin": {},
+  "keywords": [
+    "chinese",
+    "english",
+    "convert",
+    "BNF",
+    "translation",
+    "langugage"
+  ],
+  "homepage": "https://github.com/ccckmit/aslt_mt",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/ccckmit/aslt.git"
+  },
+  "author": {
+    "name": "Chung-Chen Chen",
+    "email": "ccckmit@gmail.com"
+  },
+  "license": "MIT"
+}
