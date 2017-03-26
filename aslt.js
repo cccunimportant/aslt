@@ -49,12 +49,13 @@ function P () {
     var t = words[wi].tag
     while (isTag(t)) next(t)
   }
-  cuts[wi-1] = '/'
+  cuts[wi - 1] = '/'
 }
 
 var exps = [
   /^\s*([\u4E00-\u9FFF]{1,8}):([a-z])\s+/i,
-  /^\s*(\w{1,20}):([a-z])\s+/i,
+//  /^\s*(\w{1,20}):([a-z])\s+/i,
+  /^(\w{1,20})(:([a-z]))?/i,
   /^[\u4E00-\u9FFF]{4}/,
   /^[\u4E00-\u9FFF]{3}/,
   /^[\u4E00-\u9FFF]{2}/,
@@ -73,12 +74,13 @@ function clex (text) {
         if (ri === 0) { // ex: 瑪莉:N
           word = {cn: cc.tw2cn(m[1]), en: '_', tag: m[2]}
         } else if (ri === 1) { // ex: John:N
-          word = {cn: m[1], en: m[1], tag: m[2]}
+          var tag = (m[2] == null) ? 'N' : m[2]
+          word = {cn: m[1], en: m[1], tag: tag}
         } else { // 1-4 字的中文詞
           word = kb.get(m[0])
         }
         if (word == null && ri === exps.length - 1) { // 單一字元 .
-          word = {cn: m[0], tag: '?'}
+          word = {cn: m[0], en: m[0], tag: '.'}
         }
         if (word != null) {
           if (word.cn !== ' ' && word.cn !== '\n') {
@@ -121,18 +123,28 @@ function mt (words) {
   return eWords
 }
 
-function analysis (text) {
+function analyze (text) {
   var lex = clex(' ' + text)
-  console.log('%j', lex.tokens)
 //  console.log('詞彙：%j', lex.words)
   var p = parse(lex)
 //  console.log('詞性：%j', p.tags)
+//  console.log('錯誤：%j', p.errors)
+  p.en = mt(lex.words)
+  return p
+}
+
+function report (p) {
+  console.log('%j', p.tokens)
+//  console.log('詞性：%j', p.tags)
   console.log(' %s', formatParse(p).join(' ').trim())
 //  console.log('錯誤：%j', p.errors)
-  var eWords = mt(lex.words)
-  console.log('%j', eWords)
+  console.log('%j', p.en)
   console.log('=========================')
-  return {cn: words, en: eWords}
+}
+
+function analysis (text) {
+  var p = analyze(text)
+  report(p)
 }
 
 function formatParse (p) {
@@ -150,5 +162,7 @@ module.exports = {
   mt: mt,
   english: english,
   formatParse: formatParse,
+  report: report,
+  analyze: analyze,
   analysis: analysis
 }

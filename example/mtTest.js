@@ -7,6 +7,7 @@ MT.analysis('John:N 與 瑪莉:N 是 一 對 戀人。\n')
 MT.analysis('風與日。風日爭，旅人至，脫者勝，風狂吹，人緊衣，風敗，日暖照，人脫衣，日勝。\n')
 MT.analysis('蘋果和牛奶很好吃。蘋果牛奶很好喝。很好喝的蘋果牛奶。')
 MT.analysis('好大的蘋果。')
+MT.analysis('John 和 Mary 一起吃蘋果。\n')
 
 // MT.analysis('蘋果 了 了 香蕉 吃 。 ')
 // MT.analysis('蘋果 和 香蕉 吃 。')
