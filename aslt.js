@@ -53,7 +53,7 @@ function P () {
 }
 
 var exps = [
-  /^\s*([\u4E00-\u9FFF]{1,8}):([a-z])\s+/i,
+  /^\s+([\u4E00-\u9FFF]{1,8}):([a-z])(=(\w+))?\s+/i,
 //  /^\s*(\w{1,20}):([a-z])\s+/i,
   /^(\w{1,20})(:([a-z]))?/i,
   /^[\u4E00-\u9FFF]{4}/,
@@ -69,10 +69,11 @@ function clex (text) {
   for (var i = 0; i < text.length;) {
     for (var ri = 0; ri < exps.length; ri++) {
       var word = null
-      m = exps[ri].exec(text.substr(i, 12))
+      m = exps[ri].exec(text.substr(i, 50))
       if (m) {
         if (ri === 0) { // ex: 瑪莉:N
-          word = {cn: cc.tw2cn(m[1]), en: '_', tag: m[2]}
+          word = {cn: m[1], en: m[4], tag: m[2]}
+          kb.setByCn(word)
         } else if (ri === 1) { // ex: John:N
           var tag = (m[2] == null) ? 'N' : m[2]
           word = {cn: m[1], en: m[1], tag: tag}
@@ -108,7 +109,7 @@ function parse (lex) {
 }
 
 function english (word) {
-  if (word.en === '_') {
+  if (word.en == null || word.en === '') {
     return '_' + pinyinJs(word.cn).toString().replace(',', '_')
   } else {
     return word.en

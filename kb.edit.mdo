@@ -20,9 +20,9 @@ a|更多|more||
 a|越|more2||
 a|也|also|
 // 句尾詞
-a|呢|_|
-a|嗎|_|
-a|阿|_|
+a|呢||
+a|嗎||
+a|阿||
 a|好|good||
 // 英文標點
 .|.|.||
@@ -50,20 +50,24 @@ a|『|『|
 a|』|』|
 a|「|「|
 a|」|」|
-// 介係詞
-V|會|will|
+// 量詞
+a|個||
+a|隻||
+a|條||
+a|位||
 // 測試故事詞彙
+V|會|will|
 N|天國|heaven|
 N|國民|country_people|
 V|刻意|deliberately
-a|地|_|
+a|地||
 N|戀人|lover||
 N|巡捕|policeman||
 N|捕手|catcher||
-N|小明|_||
-N|小華|_||
-N|小莉|_||
-N|大雄|_||
+N|小明|||
+N|小華|||
+N|小莉|||
+N|大雄|||
 N|爸爸|papa||
 N|魚|fish||
 N|天|sky||
@@ -101,7 +105,7 @@ V|脫|takeOff||
 V|狂|wild||
 V|暖|warm||
 a|還|still||
-a|了|_||
+a|了|||
 a|一起|together||
 a|不|no||
 a|幾|n||
@@ -109,12 +113,9 @@ a|這|this||
 a|那|that||
 a|5|5||
 a|3|3||
-a|個|_||
-a|隻|_||
-a|條|_||
 a|黑|black||
 a|大|big||
-a|的|_||
+a|的|||
 -|捕鱼|fishing||
 V|是|is||
 V|有|has||
